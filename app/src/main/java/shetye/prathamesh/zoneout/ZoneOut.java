@@ -88,7 +88,9 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
 
     private void myToggleSelection(int idx) {
         mAdapter.toggleSelection(idx);
-//        mActionMode.setTitle("Zone these out");
+        if (mAdapter.getSelectedItemCount() == 0) {
+            hideFAB();
+        }
     }
 
     @Override
@@ -116,8 +118,20 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
 
     @Override
     public void onBackPressed() {
-        this.mFAddButton = null;
-        mAdapter.clearSelections();
-        super.onBackPressed();
+        if (mFAddButton != null) {
+            hideFAB();
+            mAdapter.clearSelections();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void hideFAB() {
+        if (mFAddButton != null) {
+            NoteAnimator.animateFAB(getApplicationContext(), mFAddButton, NoteAnimator.OUT,
+                    NoteAnimator.BOTTOM);
+            this.mFAddButton.setVisibility(View.INVISIBLE);
+            this.mFAddButton = null;
+        }
     }
 }
