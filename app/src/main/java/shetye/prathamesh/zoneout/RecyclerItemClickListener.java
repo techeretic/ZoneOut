@@ -7,7 +7,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class RecyclerItemClickListener implements OnItemTouchListener {
+public class RecyclerItemClickListener extends GestureDetector.SimpleOnGestureListener implements OnItemTouchListener {
     private OnItemClickListener mListener;
 
     public interface OnItemClickListener {
@@ -15,10 +15,12 @@ public class RecyclerItemClickListener implements OnItemTouchListener {
     }
 
     GestureDetector mGestureDetector;
+    RecyclerView recview;
 
-    public RecyclerItemClickListener(Context context,
+    public RecyclerItemClickListener(RecyclerView recyclerView, Context context,
                                      OnItemClickListener listener) {
         mListener = listener;
+        recview = recyclerView;
         mGestureDetector = new GestureDetector(context,
                 new GestureDetector.SimpleOnGestureListener() {
                     @Override
@@ -36,6 +38,16 @@ public class RecyclerItemClickListener implements OnItemTouchListener {
             mListener.onItemClick(childView, view.getChildPosition(childView));
         }
         return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+        View childView = recview.findChildViewUnder(e.getX(), e.getY());
+        if (childView != null && mListener != null
+                && mGestureDetector.onTouchEvent(e)) {
+            mListener.onItemClick(childView, recview.getChildPosition(childView));
+        }
+        super.onLongPress(e);
     }
 
     @Override

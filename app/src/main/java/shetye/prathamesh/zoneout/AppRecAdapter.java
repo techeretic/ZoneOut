@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.ResolveInfo;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.CardView;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,10 +21,12 @@ public class AppRecAdapter extends
         RecyclerView.Adapter<AppRecAdapter.ViewHolder> {
     List<ResolveInfo> mApps = new ArrayList<ResolveInfo>();
     Context mContext;
+    private SparseBooleanArray mSelectedItems;
 
     AppRecAdapter(Context context, List<ResolveInfo> objects) {
         mContext = context;
         mApps = objects;
+        mSelectedItems = new SparseBooleanArray();
     }
 
     @Override
@@ -31,6 +34,7 @@ public class AppRecAdapter extends
 
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.app_icon, parent,
                 false);
+        v.setSelected(false);
         ViewHolder vh = new ViewHolder(v,mContext);
         return vh;
     }
@@ -39,6 +43,7 @@ public class AppRecAdapter extends
     public void onBindViewHolder(AppRecAdapter.ViewHolder viewHolder, int position) {
         viewHolder.appIcon.setImageDrawable(mApps.get(position).loadIcon(mContext.getPackageManager()));
         viewHolder.appName.setText(mApps.get(position).loadLabel(mContext.getPackageManager()));
+        viewHolder.itemView.setActivated(mSelectedItems.get(position, false));
     }
 
     @Override
@@ -47,11 +52,8 @@ public class AppRecAdapter extends
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
         public TextView appName;
-
         public ImageView appIcon;
-
         private Context mContext;
 
         public ViewHolder(View view, Context context) {
@@ -59,13 +61,38 @@ public class AppRecAdapter extends
             mContext = context;
             appName = (TextView) view.findViewById(R.id.appText);
             appIcon = (ImageView) view.findViewById(R.id.appIcon);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    CardView cv = (CardView) v.findViewById(R.id.card_view);
-                    cv.setBackgroundColor(mContext.getResources().getColor(R.color.accent_material_light));
-                }
-            });
         }
+    }
+
+    public void toggleSelection(int pos) {
+        if (mSelectedItems.get(pos, false)) {
+            mSelectedItems.delete(pos);
+        }
+        else {
+            mSelectedItems.put(pos, true);
+        }
+        notifyItemChanged(pos);
+    }
+
+    public void clearSelections() {
+        mSelectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedItemCount() {
+        return mSelectedItems.size();
+    }
+
+    public List<Integer> getSelectedItems() {
+        List<Integer> items = new ArrayList<Integer>(mSelectedItems.size());
+        for (int i = 0; i < mSelectedItems.size(); i++) {
+            items.add(mSelectedItems.keyAt(i));
+        }
+        return items;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return 142857 + position;
     }
 }
