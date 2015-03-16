@@ -25,13 +25,14 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TimePicker;
-
 import java.util.List;
 
 
 public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
 
     private RecyclerView mRecyclerView;
+    private Spinner mTimeSpinner;
+    private Spinner mDateSpinner;
     private AppRecAdapter mAdapter;
     private FloatingActionButton mFAddButton = null;
     private PackageManager mPm;
@@ -39,6 +40,12 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
     private Context mContext;
     private String [] mTimeSpinnerContent;
     private String [] mDateSpinnerContent;
+    private int mSelectedDay;
+    private int mSelectedMonth;
+    private int mSelectedYear;
+    private int mSelectedHours;
+    private int mSelectedMinutes;
+    private boolean mPastDataSelected;
     ActionMode mActionMode;
 
     @Override
@@ -92,26 +99,38 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
                 dialog.dismiss();
             }
         });
-        Spinner timeSpinner = (Spinner) dialog.findViewById(R.id.timespinner);
-        Spinner dateSpinner = (Spinner) dialog.findViewById(R.id.datespinner);
+        mTimeSpinner = (Spinner) dialog.findViewById(R.id.timespinner);
+        mDateSpinner = (Spinner) dialog.findViewById(R.id.datespinner);
         ArrayAdapter timespinnerArrayAdapter = new ArrayAdapter(context,
                 android.R.layout.simple_spinner_dropdown_item,
                 mTimeSpinnerContent);
         ArrayAdapter datespinnerArrayAdapter = new ArrayAdapter(mContext,
                 android.R.layout.simple_spinner_dropdown_item,
                 mDateSpinnerContent);
-        dateSpinner.setAdapter(datespinnerArrayAdapter);
-        timeSpinner.setAdapter(timespinnerArrayAdapter);
-        timeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mDateSpinner.setAdapter(datespinnerArrayAdapter);
+        mTimeSpinner.setAdapter(timespinnerArrayAdapter);
+        mTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                final Time dtNow = new Time();
+                dtNow.setToNow();
+                mSelectedHours = dtNow.hour;
+                mSelectedMinutes = dtNow.minute;
                 if(position == mTimeSpinnerContent.length-1) {
                     TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
                         @Override
                         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-
+                            Time selectedTime = new Time();
+                            mSelectedHours = hourOfDay;
+                            mSelectedMinutes = minute;
+                            selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+                            if (Time.compare(selectedTime, dtNow) <= 0) {
+                                mPastDataSelected = true;
+                            }
+                            String status = selectedTime.format("MM/DD/YYYY hh:mm a");
+                            updateSpinnerDialog(status, true);
                         }
-                    }, Time.HOUR, Time.MINUTE, false);
+                    }, mSelectedHours, mSelectedMinutes, false);
                     timePickerDialog.show();
                 }
             }
@@ -121,16 +140,29 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
                 return;
             }
         });
-        dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mDateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                final Time dtNow = new Time();
+                dtNow.setToNow();
+                mSelectedYear = dtNow.year;
+                mSelectedMonth = dtNow.month;
+                mSelectedDay = dtNow.monthDay;
                 if(position == mDateSpinnerContent.length-1) {
                     DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
                         @Override
-                        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        public void onDateSet(DatePicker view, int yy, int mm, int dd) {
+                            Time selectedTime = new Time();
+                            mSelectedYear = yy;
+                            mSelectedMonth = mm;
+                            mSelectedDay = dd;
+                            selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+                            if (Time.compare(selectedTime, dtNow) <= 0) {
+                                mPastDataSelected = true;
+                            }
 
                         }
-                    }, Time.MONTH_DAY, Time.MONTH, Time.YEAR);
+                    }, mSelectedYear, mSelectedMonth, mSelectedDay);
                     datePickerDialog.show();
                 }
             }
@@ -209,5 +241,28 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
             this.mFAddButton.setVisibility(View.INVISIBLE);
             this.mFAddButton = null;
         }
+    }
+
+    private void updateSpinnerDialog(String status, boolean setTime) {
+        String [] newContent;
+        String [] baseContent;
+        Spinner spinObj;
+        if (setTime) {
+            baseContent = mTimeSpinnerContent;
+            spinObj = mTimeSpinner;
+        } else {
+            baseContent = mDateSpinnerContent;
+            spinObj = mDateSpinner;
+        }
+        newContent = new String[baseContent.length+1];
+        newContent[0] = status;
+        for(int i=0;i<baseContent.length;i++) {
+            newContent[i+1] = baseContent[i];
+        }
+        spinObj.setSelection(0, true);
+        ArrayAdapter spinnerArrayAdapter = new ArrayAdapter(mContext,
+                android.R.layout.simple_spinner_dropdown_item,
+                newContent);
+        spinObj.setAdapter(spinnerArrayAdapter);
     }
 }
