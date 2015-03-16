@@ -1,6 +1,23 @@
 <resources>
-    <string name="app_name">ZoneOut</string>
+    <string name="app_name">Zone Out</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="time_dialog">Till when do you want to Zone Out?</string>
+    <string name="time_label">Time</string>
+    <string name="date_label">Date</string>
+    <string name="ok_label">Ok</string>
+    <string name="cancel_label">Cancel</string>
+    <string-array name="Time_Spinner_Options">
+        <item>Morning - 8:00 am</item>
+        <item>Aternoon - 1:00 pm</item>
+        <item>Evening - 6:00 pm</item>
+        <item>Night - 9:00 pm</item>
+        <item>Set Time</item>
+    </string-array>
+    <string-array name="Date_Spinner_Options">
+        <item>Today</item>
+        <item>Tomorrow</item>
+        <item>Set Time</item>
+    </string-array>
 </resources>

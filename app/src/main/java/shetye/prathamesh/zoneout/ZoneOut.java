@@ -1,5 +1,8 @@
 package shetye.prathamesh.zoneout;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -9,12 +12,19 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.Time;
 import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.Spinner;
+import android.widget.TimePicker;
 
 import java.util.List;
 
@@ -27,6 +37,8 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
     private PackageManager mPm;
     private List<ResolveInfo> mPkgAppsList;
     private Context mContext;
+    private String [] mTimeSpinnerContent;
+    private String [] mDateSpinnerContent;
     ActionMode mActionMode;
 
     @Override
@@ -39,6 +51,8 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
         final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         mPkgAppsList = mPm.queryIntentActivities(mainIntent, 0);
+        mTimeSpinnerContent = getResources().getStringArray(R.array.Time_Spinner_Options);
+        mDateSpinnerContent = getResources().getStringArray(R.array.Date_Spinner_Options);
         mRecyclerView = (RecyclerView) findViewById(R.id.appRecView);
 
         mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(mRecyclerView, this,
@@ -57,7 +71,7 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
 
                                 @Override
                                 public void onClick(View v) {
-
+                                    createZoneOutDialog(mContext);
                                 }
                             });
                         }
@@ -65,6 +79,68 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
                     }
                 }));
 
+    }
+
+    private void createZoneOutDialog(final Context context) {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.datetimepicker_dialog);
+        dialog.setTitle("Zone Out until??");
+        Button btnCancel = (Button) dialog.findViewById(R.id.btn_cancel);
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        Spinner timeSpinner = (Spinner) dialog.findViewById(R.id.timespinner);
+        Spinner dateSpinner = (Spinner) dialog.findViewById(R.id.datespinner);
+        ArrayAdapter timespinnerArrayAdapter = new ArrayAdapter(context,
+                android.R.layout.simple_spinner_dropdown_item,
+                mTimeSpinnerContent);
+        ArrayAdapter datespinnerArrayAdapter = new ArrayAdapter(mContext,
+                android.R.layout.simple_spinner_dropdown_item,
+                mDateSpinnerContent);
+        dateSpinner.setAdapter(datespinnerArrayAdapter);
+        timeSpinner.setAdapter(timespinnerArrayAdapter);
+        timeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(position == mTimeSpinnerContent.length-1) {
+                    TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+
+                        }
+                    }, Time.HOUR, Time.MINUTE, false);
+                    timePickerDialog.show();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                return;
+            }
+        });
+        dateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(position == mDateSpinnerContent.length-1) {
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+                        }
+                    }, Time.MONTH_DAY, Time.MONTH, Time.YEAR);
+                    datePickerDialog.show();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                return;
+            }
+        });
+        dialog.show();
     }
 
     @Override
