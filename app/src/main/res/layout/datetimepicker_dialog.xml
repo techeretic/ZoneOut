@@ -16,14 +16,18 @@
         android:textColor="@android:color/darker_gray"
         android:textStyle="italic" />
 
-    <Spinner
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/timespinner"
+        android:text="@string/time_set_label"
+        android:id="@+id/btntimeset"
         android:layout_centerHorizontal="true"
-        android:spinnerMode="dropdown"
         android:layout_below="@+id/timelabel"
-        android:clickable="true" />
+        android:textColor="@android:color/darker_gray"
+        style="?android:attr/buttonBarButtonStyle"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="italic"
+        android:gravity="left" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,19 +36,22 @@
         android:text="@string/date_label"
         android:layout_marginTop="15dp"
         android:id="@+id/datelabel"
-        android:layout_below="@+id/timespinner"
+        android:layout_below="@+id/btntimeset"
         android:textColor="@android:color/darker_gray"
         android:textStyle="italic"/>
 
-    <Spinner
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/datespinner"
-        android:layout_below="@+id/datelabel"
+        android:text="@string/time_set_label"
+        android:id="@+id/btndateset"
         android:layout_centerHorizontal="true"
-        android:spinnerMode="dropdown"
-        android:clickable="true" />
-
+        android:layout_below="@+id/datelabel"
+        android:textColor="@android:color/darker_gray"
+        style="?android:attr/buttonBarButtonStyle"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="italic"
+        android:gravity="left"/>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -52,7 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_marginTop="15dp"
-        android:layout_below="@+id/datespinner"
+        android:layout_below="@+id/btndateset"
         android:layout_alignParentTop="false"
         android:gravity="right">
 

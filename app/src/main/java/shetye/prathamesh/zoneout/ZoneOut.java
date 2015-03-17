@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -25,14 +26,17 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TimePicker;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
 public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
 
     private RecyclerView mRecyclerView;
-    private Spinner mTimeSpinner;
-    private Spinner mDateSpinner;
+    private Button mTimeBtn;
+    private Button mDateBtn;
     private AppRecAdapter mAdapter;
     private FloatingActionButton mFAddButton = null;
     private PackageManager mPm;
@@ -45,7 +49,10 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
     private int mSelectedYear;
     private int mSelectedHours;
     private int mSelectedMinutes;
-    private boolean mPastDataSelected;
+    private boolean mPastDateSelected;
+    private final int mTagKey = 100;
+    private final String mTimeTag = "TIME";
+    private final String mDateTag = "DATE";
     ActionMode mActionMode;
 
     @Override
@@ -99,77 +106,65 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
                 dialog.dismiss();
             }
         });
-        mTimeSpinner = (Spinner) dialog.findViewById(R.id.timespinner);
-        mDateSpinner = (Spinner) dialog.findViewById(R.id.datespinner);
-        ArrayAdapter timespinnerArrayAdapter = new ArrayAdapter(context,
-                android.R.layout.simple_spinner_dropdown_item,
-                mTimeSpinnerContent);
-        ArrayAdapter datespinnerArrayAdapter = new ArrayAdapter(mContext,
-                android.R.layout.simple_spinner_dropdown_item,
-                mDateSpinnerContent);
-        mDateSpinner.setAdapter(datespinnerArrayAdapter);
-        mTimeSpinner.setAdapter(timespinnerArrayAdapter);
-        mTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mTimeBtn = (Button) dialog.findViewById(R.id.btntimeset);
+        mDateBtn = (Button) dialog.findViewById(R.id.btndateset);
+        final Time dtNow = new Time();
+        dtNow.setToNow();
+        mSelectedHours = dtNow.hour;
+        mSelectedMinutes = dtNow.minute;
+        mSelectedYear = dtNow.year;
+        mSelectedMonth = dtNow.month;
+        mSelectedDay = dtNow.monthDay;
+        updateBtnText(dtNow, false);
+        //updateBtnText(dtNow, true);
+        Time selectedTime = new Time();
+        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+        if (Time.compare(selectedTime, dtNow) <= 0) {
+            mPastDateSelected = true;
+        } else {
+            mPastDateSelected = false;
+        }
+        mTimeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                final Time dtNow = new Time();
-                dtNow.setToNow();
-                mSelectedHours = dtNow.hour;
-                mSelectedMinutes = dtNow.minute;
-                if(position == mTimeSpinnerContent.length-1) {
-                    TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                            Time selectedTime = new Time();
-                            mSelectedHours = hourOfDay;
-                            mSelectedMinutes = minute;
-                            selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
-                            if (Time.compare(selectedTime, dtNow) <= 0) {
-                                mPastDataSelected = true;
-                            }
-                            String status = selectedTime.format("MM/DD/YYYY hh:mm a");
-                            updateSpinnerDialog(status, true);
+            public void onClick(View v) {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        Time selectedTime = new Time();
+                        mSelectedHours = hourOfDay;
+                        mSelectedMinutes = minute;
+                        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+                        if (Time.compare(selectedTime, dtNow) <= 0) {
+                            mPastDateSelected = true;
+                        } else {
+                            mPastDateSelected = false;
                         }
-                    }, mSelectedHours, mSelectedMinutes, false);
-                    timePickerDialog.show();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                return;
+                        updateBtnText(selectedTime, true);
+                    }
+                }, mSelectedHours, mSelectedMinutes, false);
+                timePickerDialog.show();
             }
         });
-        mDateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                final Time dtNow = new Time();
-                dtNow.setToNow();
-                mSelectedYear = dtNow.year;
-                mSelectedMonth = dtNow.month;
-                mSelectedDay = dtNow.monthDay;
-                if(position == mDateSpinnerContent.length-1) {
-                    DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker view, int yy, int mm, int dd) {
-                            Time selectedTime = new Time();
-                            mSelectedYear = yy;
-                            mSelectedMonth = mm;
-                            mSelectedDay = dd;
-                            selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
-                            if (Time.compare(selectedTime, dtNow) <= 0) {
-                                mPastDataSelected = true;
-                            }
-
+            public void onClick(View v) {
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int yy, int mm, int dd) {
+                        Time selectedTime = new Time();
+                        mSelectedYear = yy;
+                        mSelectedMonth = mm;
+                        mSelectedDay = dd;
+                        selectedTime.set(0, mSelectedMinutes, mSelectedHours, mSelectedDay, mSelectedMonth, mSelectedYear);
+                        if (Time.compare(selectedTime, dtNow) <= 0) {
+                            mPastDateSelected = true;
+                        } else {
+                            mPastDateSelected = false;
                         }
-                    }, mSelectedYear, mSelectedMonth, mSelectedDay);
-                    datePickerDialog.show();
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                return;
+                        updateBtnText(selectedTime, false);
+                    }
+                }, mSelectedYear, mSelectedMonth, mSelectedDay);
+                datePickerDialog.show();
             }
         });
         dialog.show();
@@ -243,26 +238,27 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
         }
     }
 
-    private void updateSpinnerDialog(String status, boolean setTime) {
-        String [] newContent;
-        String [] baseContent;
-        Spinner spinObj;
+    private void updateBtnText(Time time, boolean setTime) {
         if (setTime) {
-            baseContent = mTimeSpinnerContent;
-            spinObj = mTimeSpinner;
+            if (mTimeBtn != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a");
+                mTimeBtn.setText(sdf.format(new Date(time.toMillis(false))));
+                if (mPastDateSelected) {
+                    mTimeBtn.setTextColor(Color.RED);
+                } else {
+                    mTimeBtn.setTextColor(Color.GRAY);
+                }
+            }
         } else {
-            baseContent = mDateSpinnerContent;
-            spinObj = mDateSpinner;
+            if (mDateBtn != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("cccc, MMMM dd");
+                mDateBtn.setText(sdf.format(new Date(time.toMillis(false))));
+                if (mPastDateSelected) {
+                    mDateBtn.setTextColor(Color.RED);
+                } else {
+                    mDateBtn.setTextColor(Color.GRAY);
+                }
+            }
         }
-        newContent = new String[baseContent.length+1];
-        newContent[0] = status;
-        for(int i=0;i<baseContent.length;i++) {
-            newContent[i+1] = baseContent[i];
-        }
-        spinObj.setSelection(0, true);
-        ArrayAdapter spinnerArrayAdapter = new ArrayAdapter(mContext,
-                android.R.layout.simple_spinner_dropdown_item,
-                newContent);
-        spinObj.setAdapter(spinnerArrayAdapter);
     }
 }

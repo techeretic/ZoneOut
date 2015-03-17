@@ -5,7 +5,9 @@
     <string name="action_settings">Settings</string>
     <string name="time_dialog">Till when do you want to Zone Out?</string>
     <string name="time_label">Time</string>
+    <string name="time_set_label">Set Time</string>
     <string name="date_label">Date</string>
+    <string name="date_set_label">Set Date</string>
     <string name="ok_label">Ok</string>
     <string name="cancel_label">Cancel</string>
     <string-array name="Time_Spinner_Options">
