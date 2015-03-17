@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -14,6 +15,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.Menu;
@@ -50,9 +52,11 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
     private int mSelectedHours;
     private int mSelectedMinutes;
     private boolean mPastDateSelected;
+    private SharedPreferences mPrefs;
     private final int mTagKey = 100;
     private final String mTimeTag = "TIME";
     private final String mDateTag = "DATE";
+    public static final String SHARED_PREF_APP_DATA = "APP_DATA";
     ActionMode mActionMode;
 
     @Override
@@ -61,10 +65,9 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
         setContentView(R.layout.zone_out_home);
 
         mContext = this;
-        mPm = this.getPackageManager();
-        final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mPkgAppsList = mPm.queryIntentActivities(mainIntent, 0);
+        mPrefs = getSharedPreferences(SHARED_PREF_APP_DATA, MODE_PRIVATE);
+        fetchApps();
+
         mTimeSpinnerContent = getResources().getStringArray(R.array.Time_Spinner_Options);
         mDateSpinnerContent = getResources().getStringArray(R.array.Date_Spinner_Options);
         mRecyclerView = (RecyclerView) findViewById(R.id.appRecView);
@@ -226,6 +229,17 @@ public class ZoneOut extends ActionBarActivity implements ActionMode.Callback{
             mAdapter.clearSelections();
         } else {
             super.onBackPressed();
+        }
+    }
+
+    private void fetchApps() {
+        mPm = this.getPackageManager();
+        final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        mPkgAppsList = mPm.queryIntentActivities(mainIntent, 0);
+        Log.d("ZoneOut", "IN fetchApps");
+        for (ResolveInfo reInfo : mPkgAppsList) {
+            Log.d("ZoneOut", "reInfo.activityInfo.packageName = " + reInfo.activityInfo.packageName);
         }
     }
 
