@@ -12,7 +12,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by p.shetye on 3/13/15.
@@ -87,6 +89,14 @@ public class AppRecAdapter extends
         List<Integer> items = new ArrayList<Integer>(mSelectedItems.size());
         for (int i = 0; i < mSelectedItems.size(); i++) {
             items.add(mSelectedItems.keyAt(i));
+        }
+        return items;
+    }
+
+    public Set<String> getSelectedItemsAsSet() {
+        Set<String> items = new HashSet<>();
+        for (int i = 0; i < mSelectedItems.size(); i++) {
+            items.add(mApps.get(mSelectedItems.keyAt(i)).activityInfo.packageName);
         }
         return items;
     }
